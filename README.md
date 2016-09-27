@@ -1,3 +1,5 @@
+This version 1.0.6.7 is compatible to JDK 1.7. I get rid of some JDK8 features in the code( it doesn't support repeatable annotation) in this version.
+
 Cucumber Reporting library is the set of Cucumber extensions to produce additional HTML reports and extend existing Cucumber runner functionality (currently based on JUnit).
 
 **The Latest Version:** [![Cucumber Report](https://maven-badges.herokuapp.com/maven-central/com.github.mkolisnyk/cucumber-reports/badge.svg?style=flat)](http://mvnrepository.com/artifact/com.github.mkolisnyk/cucumber-reports)
