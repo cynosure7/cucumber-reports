@@ -10,6 +10,11 @@ import java.lang.annotation.Target;
 public @interface ExtendedCucumberOptions {
     int retryCount() default 0;
 
+    /**
+     * @return max amount of minutes this is allowed to run for. 0 (default) means no restriction.
+     */
+    long timeout() default 0;
+
     String jsonReport() default "";
     String[] jsonReports() default { };
 

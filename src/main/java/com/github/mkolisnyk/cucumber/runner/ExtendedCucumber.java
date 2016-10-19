@@ -5,7 +5,11 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
+import com.google.common.util.concurrent.SimpleTimeLimiter;
+import com.google.common.util.concurrent.TimeLimiter;
 import org.apache.commons.lang.ArrayUtils;
 import org.junit.runner.Description;
 import org.junit.runner.notification.RunNotifier;
@@ -34,8 +38,10 @@ public class ExtendedCucumber extends ParentRunner<ExtendedFeatureRunner> {
     private final ExtendedRuntimeOptions[] extendedOptions;
     private Class clazzValue;
     private int retryCount = 0;
+    private long timeout = 0;
     private int threadsCount = 1;
     private boolean runPreDefined = true;
+    private boolean isTimeout = false;
 
     public ExtendedCucumber(Class clazz) throws Exception {
         super(clazz);
@@ -51,6 +57,7 @@ public class ExtendedCucumber extends ParentRunner<ExtendedFeatureRunner> {
         extendedOptions = ExtendedRuntimeOptions.init(clazz);
         for (ExtendedRuntimeOptions option : extendedOptions) {
             retryCount = Math.max(retryCount, option.getRetryCount());
+            timeout = Math.max(timeout, option.getTimeout());
             threadsCount = Math.max(threadsCount, option.getThreadsCount());
         }
 
@@ -79,6 +86,7 @@ public class ExtendedCucumber extends ParentRunner<ExtendedFeatureRunner> {
         extendedOptions = ExtendedRuntimeOptions.init(extendedOptionsValue);
         for (ExtendedRuntimeOptions option : extendedOptions) {
             retryCount = Math.max(retryCount, option.getRetryCount());
+            timeout = Math.max(timeout, option.getTimeout());
             threadsCount = Math.max(threadsCount, option.getThreadsCount());
         }
 
@@ -139,7 +147,7 @@ public class ExtendedCucumber extends ParentRunner<ExtendedFeatureRunner> {
     }
 
     @Override
-    public void run(RunNotifier notifier) {
+    public void run(final RunNotifier notifier) {
         try {
             if (this.runPreDefined) {
                 runPredefinedMethods(BeforeSuite.class);
@@ -148,7 +156,22 @@ public class ExtendedCucumber extends ParentRunner<ExtendedFeatureRunner> {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        super.run(notifier);
+        if (timeout == 0) {
+            super.run(notifier);
+        } else {
+            TimeLimiter limiter = new SimpleTimeLimiter();
+            try {
+                limiter.callWithTimeout(new Callable<Void>() {
+                    public Void call() {
+                        ExtendedCucumber.super.run(notifier);
+                        return null;
+                    }
+                }, timeout, TimeUnit.MINUTES, false);
+            } catch (Exception e) {
+                this.isTimeout = true;
+                e.printStackTrace();
+            }
+        }
         try {
             if (this.runPreDefined) {
                 runPredefinedMethods(AfterSuite.class);
@@ -171,5 +194,9 @@ public class ExtendedCucumber extends ParentRunner<ExtendedFeatureRunner> {
                     new ExtendedFeatureRunner(cucumberFeature, runtime,
                             jUnitReporter, this.retryCount, retryMethods));
         }
+    }
+
+    public boolean isTimeout() {
+        return isTimeout;
     }
 }

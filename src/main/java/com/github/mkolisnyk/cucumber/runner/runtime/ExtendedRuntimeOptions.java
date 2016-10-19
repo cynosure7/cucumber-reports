@@ -19,6 +19,7 @@ public class ExtendedRuntimeOptions {
     private String outputFolder;
     private String reportPrefix;
     private int retryCount = 0;
+    private long timeout = 0;
     private String screenShotSize = "";
     private boolean toPDF = false;
     private String pdfPageSize = "auto";
@@ -63,6 +64,7 @@ public class ExtendedRuntimeOptions {
             this.outputFolder = options.outputFolder();
             this.reportPrefix = options.reportPrefix();
             this.retryCount = options.retryCount();
+            this.timeout = options.timeout();
             this.screenShotSize = options.screenShotSize();
             this.toPDF = options.toPDF();
             this.pdfPageSize = options.pdfPageSize();
@@ -135,6 +137,10 @@ public class ExtendedRuntimeOptions {
 
     public final int getRetryCount() {
         return retryCount;
+    }
+
+    public final long getTimeout() {
+        return timeout;
     }
 
     public final String getScreenShotSize() {
@@ -241,6 +247,9 @@ public class ExtendedRuntimeOptions {
     }
     public void setRetryCount(int retryCountValue) {
         this.retryCount = retryCountValue;
+    }
+    public void setTimeout(int timeoutValue) {
+        this.timeout = timeoutValue;
     }
     public void setScreenShotSize(String screenShotSizeValue) {
         this.screenShotSize = screenShotSizeValue;
